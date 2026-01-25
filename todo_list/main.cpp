@@ -58,7 +58,27 @@ struct ToDoList {
     }
     void updateTask();
     void deleteTask();
-    void displayTask();
+    void displayTask() {
+        /*
+         * Name
+         * | Deadline:
+         * | Done:
+         * | Description:
+         * */
+        for (auto i{0}; i < tasks.size(); i++) {
+            cout << i + 1 << "." << " ";
+            cout << tasks.at(i).getName() << endl;
+            cout << "    |Done: " << (tasks.at(i).getIsCompleted() ? "X" : "")
+                 << endl;
+            if (tasks.at(i).getDeadline().length() != 0) {
+                cout << "    |Deadline: " << tasks.at(i).getDeadline() << endl;
+            }
+            if (tasks.at(i).getDescription().length() != 0) {
+                cout << "    |Description: " << tasks.at(i).getDescription()
+                     << endl;
+            }
+        }
+    }
     void run();
 
   private:
@@ -70,6 +90,8 @@ struct ToDoList {
 int main() {
     ToDoList myList;
     myList.readTask();
+
+    myList.displayTask();
 
     return EXIT_SUCCESS;
 }
