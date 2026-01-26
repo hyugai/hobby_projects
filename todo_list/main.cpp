@@ -8,10 +8,15 @@ using namespace std;
 
 #define PATH "./data.csv"
 #define MAX 200
+#define COLORSTART "\033["
+#define COLOREND "\033[0m"
+#define COLORGREEN "32m"
 
+enum class UserActions { Display, Add, Update, Remove, Details, Done, exit };
 struct Task;
 struct ToDoList;
 
+void input(int &);
 void inputFile(ifstream &);
 void inputTasks(ifstream &, vector<Task> &);
 void parseOneCsvLine(vector<string> &, const string &);
@@ -49,36 +54,11 @@ struct Task {
 };
 struct ToDoList {
     void createTask();
-    void readTask() {
-        ifstream myFile;
-        inputFile(myFile);
-        inputTasks(myFile, tasks);
-
-        myFile.close();
-    }
+    void readTask();
     void updateTask();
     void deleteTask();
-    void displayTask() {
-        /*
-         * Name
-         * | Deadline:
-         * | Done:
-         * | Description:
-         * */
-        for (auto i{0}; i < tasks.size(); i++) {
-            cout << i + 1 << "." << " ";
-            cout << tasks.at(i).getName() << endl;
-            cout << "    |Done: " << (tasks.at(i).getIsCompleted() ? "X" : "")
-                 << endl;
-            if (tasks.at(i).getDeadline().length() != 0) {
-                cout << "    |Deadline: " << tasks.at(i).getDeadline() << endl;
-            }
-            if (tasks.at(i).getDescription().length() != 0) {
-                cout << "    |Description: " << tasks.at(i).getDescription()
-                     << endl;
-            }
-        }
-    }
+    void displayTask();
+    void showDetails();
     void run();
 
   private:
@@ -89,9 +69,7 @@ struct ToDoList {
 // vector
 int main() {
     ToDoList myList;
-    myList.readTask();
-
-    myList.displayTask();
+    myList.run();
 
     return EXIT_SUCCESS;
 }
@@ -126,4 +104,80 @@ void parseOneCsvLine(vector<string> &record, const string &line) {
 
         i = next_i + 1;
     } while (i != 0);
+}
+void ToDoList::readTask() {
+    ifstream myFile;
+    inputFile(myFile);
+    inputTasks(myFile, tasks);
+
+    myFile.close();
+}
+void ToDoList::showDetails() {
+    int i;
+    cout << "Enter task's number: " << endl;
+    cin >> i;
+    cout << i << "." << " ";
+    cout << tasks.at(i - 1).getName() << endl;
+    cout << "    |Done: " << (tasks.at(i - 1).getIsCompleted() ? "X" : "")
+         << endl;
+    if (tasks.at(i - 1).getDeadline().length() != 0) {
+        cout << "    |Deadline: " << tasks.at(i - 1).getDeadline() << endl;
+    }
+    if (tasks.at(i - 1).getDescription().length() != 0) {
+        cout << "    |Description: " << tasks.at(i).getDescription() << endl;
+    }
+}
+void ToDoList::displayTask() {
+    auto maxNameLength{0};
+    for (Task t : tasks) {
+        maxNameLength =
+            (t.getName().length() > maxNameLength ? t.getName().length()
+                                                  : maxNameLength);
+    }
+
+    cout << "Name" << string(maxNameLength, ' ') << "Due" << string(9, ' ')
+         << "Done" << endl;
+    cout << string(maxNameLength + 20, '+') << endl;
+
+    for (Task t : tasks) {
+        cout << t.getName() // Name
+             << string(maxNameLength - t.getName().length() + 4, ' ');
+        cout << t.getDeadline() << string(4, ' ');       // Due
+        cout << (t.getIsCompleted() ? "x" : "") << endl; // Done
+        cout << string(maxNameLength + 20, '-') << endl;
+    }
+}
+void input(int &n) {
+    string menu{"0.Display 1.Add 2.Update 3.Remove 4.Details 5.Done 6.exit : "};
+    cout << COLORSTART << COLORGREEN << menu << COLOREND;
+    cin >> n;
+    system("clear"); // clear screen
+}
+void ToDoList::run() {
+    this->readTask();
+    int choice;
+    input(choice);
+
+    while (true) {
+        switch ((UserActions)choice) {
+        case (UserActions::Display):
+            this->displayTask();
+            break;
+        case (UserActions::Add):
+            break;
+        case (UserActions::Update):
+            break;
+        case (UserActions::Remove):
+            break;
+        case (UserActions::Details):
+            break;
+        case (UserActions::Done):
+        case (UserActions::exit):
+            exit(EXIT_SUCCESS);
+        default:
+            cout << "Invalid option!" << endl;
+            break;
+        }
+        input(choice);
+    }
 }
