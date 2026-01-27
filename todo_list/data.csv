@@ -1,3 +1,2 @@
-name,due,description,done
-ToDoList,26/01/2026,Complete as soon as possible to track tasks,0
-fix color error in NeoVim,27/01/2026,integrated terminal shows blue insteaf of green,1
+ToDoList,26-01-2026,Complete as soon as possible to track tasks,1
+Computer Architecture,27-01-2026,comlete chapter 01,0

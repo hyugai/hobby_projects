@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -21,9 +22,10 @@ enum class UserActions { Display, Add, Update, Remove, Details, Done, exit };
 struct Task;
 struct ToDoList;
 
-void input(int &);
+void inputMenu(int &);
 void inputFile(ifstream &);
 void inputTasks(ifstream &, vector<Task> &);
+void inputTaskNumber(int &);
 void parseOneCsvLine(vector<string> &, const string &);
 
 struct Task {
@@ -46,8 +48,8 @@ struct Task {
     // large object & read-only parameter
     void setName(const string &name) { this->name = name; }
     void setDeadline(const string &deadline) { this->deadline = deadline; }
-    void setDescription(const string &deadline) {
-        this->deadline = description;
+    void setDescription(const string &description) {
+        this->description = description;
     }
     void setIsCompleted(const int &isCompleted) {
         this->isCompleted = isCompleted;
@@ -60,16 +62,18 @@ struct Task {
 struct ToDoList {
     void createTask();
     void readTask();
-    void updateTask();
-    void deleteTask();
+    void updateTask(const int &);
+    void deleteTask(const int &);
 
     void displayTask();
-    void showDetails();
-    void markCompleted();
+    void showDetails(const int &);
+    void markCompleted(const int &);
+    void saveTask();
     void run();
 
   private:
     vector<Task> tasks;
+    // bool flag{false};
 };
 
 // read csv file -> load each line to an object of `Task` -> store objects in
@@ -87,7 +91,7 @@ void inputFile(ifstream &myFile) {
         cout << "Failed to open file at " << PATH << endl;
         exit(EXIT_FAILURE);
     }
-    myFile.ignore(MAX, '\n'); // skip first line (header)
+    // myFile.ignore(MAX, '\n'); // skip first line (header)
 }
 void inputTasks(ifstream &myFile, vector<Task> &tasks) {
     auto i{0};
@@ -119,11 +123,8 @@ void ToDoList::readTask() {
 
     myFile.close();
 }
-void ToDoList::showDetails() {
-    cout << "Enter task's number: ";
-    int i;
-    cin >> i;
-    Task &t{tasks.at(i - 1)};
+void ToDoList::showDetails(const int &n) {
+    Task &t{tasks.at(n - 1)};
     // Name
     cout << "󰋇 " << (t.getIsCompleted() ? STRIKEOUT : "") << t.getName()
          << RESET << endl;
@@ -166,7 +167,7 @@ void ToDoList::displayTask() {
         cout << string(maxNameLength + 30, '-') << endl;
     }
 }
-void input(int &n) {
+void inputMenu(int &n) {
     string menu{"0.Display 1.Add 2.Update 3.Remove 4.Details 5.Done 6.exit: "};
     cout << menu;
     cin >> n;
@@ -175,35 +176,101 @@ void input(int &n) {
 void ToDoList::run() {
     this->readTask();
     int choice;
-    input(choice);
+    inputMenu(choice);
 
     while (true) {
+        int n;
         switch ((UserActions)choice) {
         case (UserActions::Display):
             this->displayTask();
             break;
         case (UserActions::Add):
-            // this->createTask();
+            this->createTask();
             break;
         case (UserActions::Update):
-            // this->updateTask();
+            inputTaskNumber(n);
+            this->updateTask(n);
             break;
         case (UserActions::Remove):
-            this->deleteTask();
+            inputTaskNumber(n);
+            this->deleteTask(n);
             break;
         case (UserActions::Details):
-            this->showDetails();
+            inputTaskNumber(n);
+            this->showDetails(n);
             break;
         case (UserActions::Done):
-            this->markCompleted();
+            inputTaskNumber(n);
+            this->markCompleted(n);
             break;
         case (UserActions::exit):
+            this->saveTask();
             exit(EXIT_SUCCESS);
         default:
             cout << "Invalid option!" << endl;
             break;
         }
-        input(choice);
+        inputMenu(choice);
     }
 }
-void ToDoList::markCompleted() {}
+void ToDoList::markCompleted(const int &n) {
+    Task &t{this->tasks.at(n - 1)};
+    t.setIsCompleted(1);
+
+    this->displayTask();
+}
+void ToDoList::saveTask() {
+    ofstream myFile{PATH};
+    if (!myFile) {
+        cout << "Failed to open file at " << PATH << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    for (Task t : tasks) {
+        myFile << t.getName() << ',' << t.getDeadline() << ','
+               << t.getDescription() << ',' << t.getIsCompleted() << endl;
+    }
+
+    myFile.close();
+}
+void inputTaskNumber(int &n) {
+    cout << "Enter task's number: ";
+    cin >> n;
+}
+void ToDoList::updateTask(const int &n) {
+    Task &t{this->tasks.at(n - 1)};
+    cin.ignore(); // remove \n in buffer
+
+    string inp;
+    cout << "Name: ";
+    getline(cin, inp); // cin.getline is specifically for `char[]`
+    if (inp.length()) {
+        t.setName(inp);
+    }
+
+    cout << "Deadline (dd-MM-yyyy): ";
+    getline(cin, inp);
+    if (inp.length()) {
+        t.setDeadline(inp);
+    }
+
+    cout << "Description: ";
+    getline(cin, inp);
+    if (inp.length()) {
+        t.setDescription(inp);
+    }
+
+    cout << "IsCompleted: ";
+    getline(cin, inp);
+    if (inp.length()) {
+        t.setIsCompleted(stoi(inp));
+    }
+}
+void ToDoList::createTask() {
+    Task t{"", "", "", 0};
+    this->tasks.push_back(t);
+    this->updateTask(this->tasks.size());
+}
+void ToDoList::deleteTask(const int &n) {
+    this->tasks.erase(this->tasks.begin() + n - 1);
+}
