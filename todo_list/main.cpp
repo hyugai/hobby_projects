@@ -8,9 +8,14 @@ using namespace std;
 
 #define PATH "./data.csv"
 #define MAX 200
-#define COLORSTART "\033["
-#define COLOREND "\033[0m"
-#define COLORGREEN "32m"
+#define RESET "\e[0m"
+// this code is right, but github_dark_colorblind fucked the GREEN
+#define GREEN "\e[38;5;47m"
+#define BLUE "\e[38;5;33m"
+#define YELLOW "\e[38;5;226m"
+#define RED "\e[38;5;196m"
+#define STRIKEOUT "\e[9m"
+#define COLUMNSEPARATOR " | "
 
 enum class UserActions { Display, Add, Update, Remove, Details, Done, exit };
 struct Task;
@@ -57,8 +62,10 @@ struct ToDoList {
     void readTask();
     void updateTask();
     void deleteTask();
+
     void displayTask();
     void showDetails();
+    void markCompleted();
     void run();
 
   private:
@@ -113,19 +120,23 @@ void ToDoList::readTask() {
     myFile.close();
 }
 void ToDoList::showDetails() {
+    cout << "Enter task's number: ";
     int i;
-    cout << "Enter task's number: " << endl;
     cin >> i;
-    cout << i << "." << " ";
-    cout << tasks.at(i - 1).getName() << endl;
-    cout << "    |Done: " << (tasks.at(i - 1).getIsCompleted() ? "X" : "")
+    Task &t{tasks.at(i - 1)};
+    // Name
+    cout << "󰋇 " << (t.getIsCompleted() ? STRIKEOUT : "") << t.getName()
+         << RESET << endl;
+    // Deadline
+    cout << YELLOW " 󰃭 " << t.getDeadline() << RESET << endl;
+    // IsCompleted
+    cout << (t.getIsCompleted() ? GREEN "  (completed)" RESET
+                                : RED "  (pending)" RESET)
          << endl;
-    if (tasks.at(i - 1).getDeadline().length() != 0) {
-        cout << "    |Deadline: " << tasks.at(i - 1).getDeadline() << endl;
-    }
-    if (tasks.at(i - 1).getDescription().length() != 0) {
-        cout << "    |Description: " << tasks.at(i).getDescription() << endl;
-    }
+    // Description
+    cout << BLUE "  "
+         << (t.getDescription().length() ? t.getDescription() : "") << RESET
+         << endl;
 }
 void ToDoList::displayTask() {
     auto maxNameLength{0};
@@ -135,23 +146,31 @@ void ToDoList::displayTask() {
                                                   : maxNameLength);
     }
 
-    cout << "Name" << string(maxNameLength, ' ') << "Due" << string(9, ' ')
-         << "Done" << endl;
-    cout << string(maxNameLength + 20, '+') << endl;
+    // header
+    cout << "i." << string((tasks.size() > 9 ? 2 : 1), ' ') << "Name"
+         << string(maxNameLength - 4, ' ') << COLUMNSEPARATOR; // Name
+    cout << "Deadline" << string(2, ' ') << COLUMNSEPARATOR;   // Due
+    cout << "Completed" << COLUMNSEPARATOR << endl;            // Deadline
+    cout << string(maxNameLength + 30, '+') << endl;
 
-    for (Task t : tasks) {
-        cout << t.getName() // Name
-             << string(maxNameLength - t.getName().length() + 4, ' ');
-        cout << t.getDeadline() << string(4, ' ');       // Due
-        cout << (t.getIsCompleted() ? "x" : "") << endl; // Done
-        cout << string(maxNameLength + 20, '-') << endl;
+    // rows
+    for (auto i{0}; i < tasks.size(); i++) {
+        Task &t{tasks.at(i)};
+        cout << (t.getIsCompleted() ? STRIKEOUT : "");
+        cout << i + 1 << ". " << t.getName()
+             << string(maxNameLength - t.getName().length(), ' ')
+             << COLUMNSEPARATOR;                             // Name
+        cout << t.getDeadline() << COLUMNSEPARATOR << RESET; // Due
+        cout << string(4, ' ') << (t.getIsCompleted() ? GREEN "" : RED "")
+             << RESET << string(4, ' ') << COLUMNSEPARATOR << endl; // Completed
+        cout << string(maxNameLength + 30, '-') << endl;
     }
 }
 void input(int &n) {
-    string menu{"0.Display 1.Add 2.Update 3.Remove 4.Details 5.Done 6.exit : "};
-    cout << COLORSTART << COLORGREEN << menu << COLOREND;
+    string menu{"0.Display 1.Add 2.Update 3.Remove 4.Details 5.Done 6.exit: "};
+    cout << menu;
     cin >> n;
-    system("clear"); // clear screen
+    // system("clear"); // clear screen
 }
 void ToDoList::run() {
     this->readTask();
@@ -164,14 +183,20 @@ void ToDoList::run() {
             this->displayTask();
             break;
         case (UserActions::Add):
+            // this->createTask();
             break;
         case (UserActions::Update):
+            // this->updateTask();
             break;
         case (UserActions::Remove):
+            this->deleteTask();
             break;
         case (UserActions::Details):
+            this->showDetails();
             break;
         case (UserActions::Done):
+            this->markCompleted();
+            break;
         case (UserActions::exit):
             exit(EXIT_SUCCESS);
         default:
@@ -181,3 +206,4 @@ void ToDoList::run() {
         input(choice);
     }
 }
+void ToDoList::markCompleted() {}
