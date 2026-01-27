@@ -27,6 +27,9 @@ void inputFile(ifstream &);
 void inputTasks(ifstream &, vector<Task> &);
 void inputTaskNumber(int &);
 void parseOneCsvLine(vector<string> &, const string &);
+bool isValidDate(const string &);
+bool isCharDigit(const string &, int);
+bool isCharDash(const string &, int);
 
 struct Task {
     // string variables can be `lvalue`
@@ -65,10 +68,10 @@ struct ToDoList {
     void updateTask(const int &);
     void deleteTask(const int &);
 
-    void displayTask();
+    void displayTasks();
     void showDetails(const int &);
     void markCompleted(const int &);
-    void saveTask();
+    void saveTasks();
     void run();
 
   private:
@@ -84,7 +87,12 @@ int main() {
 
     return EXIT_SUCCESS;
 }
-
+void inputMenu(int &n) {
+    string menu{"0.Display 1.Add 2.Update 3.Remove 4.Details 5.Done 6.exit: "};
+    cout << menu;
+    cin >> n;
+    // system("clear"); // clear screen
+}
 void inputFile(ifstream &myFile) {
     myFile.open(PATH);
     if (!myFile) {
@@ -106,6 +114,10 @@ void inputTasks(ifstream &myFile, vector<Task> &tasks) {
                  stoi(record.at(3))}); // explicitly cast string to interger
     }
 }
+void inputTaskNumber(int &n) {
+    cout << "Enter task's number: ";
+    cin >> n;
+}
 void parseOneCsvLine(vector<string> &record, const string &line) {
     auto i{0};
     do {
@@ -116,6 +128,42 @@ void parseOneCsvLine(vector<string> &record, const string &line) {
         i = next_i + 1;
     } while (i != 0);
 }
+bool isValidDate(const string &date) {
+    bool res{true};
+    if (date.length() > 10 || date.length() < 0 || !isCharDash(date, 2) ||
+        !isCharDash(date, 5) || !isCharDigit(date, 0) ||
+        !isCharDigit(date, 1) || !isCharDigit(date, 3) ||
+        !isCharDigit(date, 4) || !isCharDigit(date, 6) ||
+        !isCharDigit(date, 7) || !isCharDigit(date, 8) ||
+        !isCharDigit(date, 9)) {
+        res = false;
+    }
+
+    return res;
+}
+bool isCharDigit(const string &date, int n) {
+    bool res{true};
+    if (date.at(n) > '9' || date.at(n) < '0') {
+        res = false;
+    }
+
+    return res;
+}
+bool isCharDash(const string &date, int n) {
+    bool res{true};
+    if (date.at(n) != '-') {
+        res = false;
+    }
+
+    return res;
+}
+void ToDoList::createTask() {
+    Task t{"", "01-01-0001", "", 0};
+    this->tasks.push_back(t);
+    this->updateTask(this->tasks.size());
+
+    this->displayTasks();
+}
 void ToDoList::readTask() {
     ifstream myFile;
     inputFile(myFile);
@@ -123,23 +171,53 @@ void ToDoList::readTask() {
 
     myFile.close();
 }
-void ToDoList::showDetails(const int &n) {
-    Task &t{tasks.at(n - 1)};
-    // Name
-    cout << "󰋇 " << (t.getIsCompleted() ? STRIKEOUT : "") << t.getName()
-         << RESET << endl;
-    // Deadline
-    cout << YELLOW " 󰃭 " << t.getDeadline() << RESET << endl;
-    // IsCompleted
-    cout << (t.getIsCompleted() ? GREEN "  (completed)" RESET
-                                : RED "  (pending)" RESET)
-         << endl;
-    // Description
-    cout << BLUE "  "
-         << (t.getDescription().length() ? t.getDescription() : "") << RESET
-         << endl;
+void ToDoList::updateTask(const int &n) {
+    Task &t{this->tasks.at(n - 1)};
+    cin.ignore(); // remove \n in buffer
+
+    string inp;
+    cout << "Name: ";
+    getline(cin, inp); // cin.getline is specifically designed for `char[]`
+    if (inp.length()) {
+        t.setName(inp);
+    }
+
+    cout << "Deadline (dd-MM-yyyy): ";
+    getline(cin, inp);
+    // add `isValidDate` here
+    while (true) {
+        if (inp.length() && isValidDate(inp)) {
+            t.setDeadline(inp);
+            break;
+        } else if (inp.length() == 0) { // keep old value unchanged
+            break;
+        }
+        cout << "Invalid date!" << endl << "Enter again (dd-MM-yyyy): ";
+        getline(cin, inp);
+    }
+
+    cout << "Description: ";
+    getline(cin, inp);
+    if (inp.length()) {
+        t.setDescription(inp);
+    }
+
+    cout << "IsCompleted: ";
+    getline(cin, inp);
+    if (inp.length()) {
+        t.setIsCompleted(stoi(inp));
+    }
+
+    this->displayTasks();
 }
-void ToDoList::displayTask() {
+void ToDoList::deleteTask(const int &n) {
+    this->tasks.erase(this->tasks.begin() + n - 1);
+
+    this->displayTasks();
+}
+void ToDoList::displayTasks() {
+    system("clear"); // clear screen in Linux and MacOS
+
     auto maxNameLength{0};
     for (Task t : tasks) {
         maxNameLength =
@@ -167,11 +245,43 @@ void ToDoList::displayTask() {
         cout << string(maxNameLength + 30, '-') << endl;
     }
 }
-void inputMenu(int &n) {
-    string menu{"0.Display 1.Add 2.Update 3.Remove 4.Details 5.Done 6.exit: "};
-    cout << menu;
-    cin >> n;
-    // system("clear"); // clear screen
+void ToDoList::showDetails(const int &n) {
+    system("clear"); // clear screen
+
+    Task &t{tasks.at(n - 1)};
+    // Name
+    cout << "󰋇 " << (t.getIsCompleted() ? STRIKEOUT : "") << t.getName()
+         << RESET << endl;
+    // Deadline
+    cout << YELLOW " 󰃭 " << t.getDeadline() << RESET << endl;
+    // IsCompleted
+    cout << (t.getIsCompleted() ? GREEN "  (completed)" RESET
+                                : RED "  (pending)" RESET)
+         << endl;
+    // Description
+    cout << BLUE "  "
+         << (t.getDescription().length() ? t.getDescription() : "") << RESET
+         << endl;
+}
+void ToDoList::markCompleted(const int &n) {
+    Task &t{this->tasks.at(n - 1)};
+    t.setIsCompleted(1);
+
+    this->displayTasks();
+}
+void ToDoList::saveTasks() {
+    ofstream myFile{PATH}; // file is truncated if it's read successfully
+    if (!myFile) {
+        cout << "Failed to open file at " << PATH << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    for (Task t : tasks) {
+        myFile << t.getName() << ',' << t.getDeadline() << ','
+               << t.getDescription() << ',' << t.getIsCompleted() << endl;
+    }
+
+    myFile.close();
 }
 void ToDoList::run() {
     this->readTask();
@@ -182,7 +292,7 @@ void ToDoList::run() {
         int n;
         switch ((UserActions)choice) {
         case (UserActions::Display):
-            this->displayTask();
+            this->displayTasks();
             break;
         case (UserActions::Add):
             this->createTask();
@@ -204,7 +314,7 @@ void ToDoList::run() {
             this->markCompleted(n);
             break;
         case (UserActions::exit):
-            this->saveTask();
+            this->saveTasks();
             exit(EXIT_SUCCESS);
         default:
             cout << "Invalid option!" << endl;
@@ -212,65 +322,4 @@ void ToDoList::run() {
         }
         inputMenu(choice);
     }
-}
-void ToDoList::markCompleted(const int &n) {
-    Task &t{this->tasks.at(n - 1)};
-    t.setIsCompleted(1);
-
-    this->displayTask();
-}
-void ToDoList::saveTask() {
-    ofstream myFile{PATH};
-    if (!myFile) {
-        cout << "Failed to open file at " << PATH << endl;
-        exit(EXIT_FAILURE);
-    }
-
-    for (Task t : tasks) {
-        myFile << t.getName() << ',' << t.getDeadline() << ','
-               << t.getDescription() << ',' << t.getIsCompleted() << endl;
-    }
-
-    myFile.close();
-}
-void inputTaskNumber(int &n) {
-    cout << "Enter task's number: ";
-    cin >> n;
-}
-void ToDoList::updateTask(const int &n) {
-    Task &t{this->tasks.at(n - 1)};
-    cin.ignore(); // remove \n in buffer
-
-    string inp;
-    cout << "Name: ";
-    getline(cin, inp); // cin.getline is specifically for `char[]`
-    if (inp.length()) {
-        t.setName(inp);
-    }
-
-    cout << "Deadline (dd-MM-yyyy): ";
-    getline(cin, inp);
-    if (inp.length()) {
-        t.setDeadline(inp);
-    }
-
-    cout << "Description: ";
-    getline(cin, inp);
-    if (inp.length()) {
-        t.setDescription(inp);
-    }
-
-    cout << "IsCompleted: ";
-    getline(cin, inp);
-    if (inp.length()) {
-        t.setIsCompleted(stoi(inp));
-    }
-}
-void ToDoList::createTask() {
-    Task t{"", "", "", 0};
-    this->tasks.push_back(t);
-    this->updateTask(this->tasks.size());
-}
-void ToDoList::deleteTask(const int &n) {
-    this->tasks.erase(this->tasks.begin() + n - 1);
 }
