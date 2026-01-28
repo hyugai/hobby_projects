@@ -89,6 +89,7 @@ int main() {
 }
 void inputMenu(int &n) {
     string menu{"0.Display 1.Add 2.Update 3.Remove 4.Details 5.Done 6.exit: "};
+    cout << "󰍜 Menu:" << endl;
     cout << menu;
     cin >> n;
     // system("clear"); // clear screen
@@ -226,6 +227,7 @@ void ToDoList::displayTasks() {
     }
 
     // header
+    cout << " Tasks: " << endl;
     cout << "i." << string((tasks.size() > 9 ? 2 : 1), ' ') << "Name"
          << string(maxNameLength - 4, ' ') << COLUMNSEPARATOR; // Name
     cout << "Deadline" << string(2, ' ') << COLUMNSEPARATOR;   // Due
