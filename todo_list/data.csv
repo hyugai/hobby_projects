@@ -1,8 +1,8 @@
-books/'Computer Architecture',27-01-2026,comlete chapter 01,0
-project/todo_list,26-01-2026,length check & default value for 'Deadline' member,1
+books/'Computer Architecture',30-01-2026,complete chapter 01 -> 02,0
+project/todo_list,29-01-2026,Line with unknow information is marked with grey color and use   for IsCompleted & add method to push overdue tasks on top -> normal task -> empty task,0
 schooling/it006,01-01-0001,,0
 schooling/ss007,01-01-0001,,0
 schooling/it002,01-01-0001,,0
 schooling/it005,01-01-0001,,0
 schooling/ma004,01-01-0001,,0
-schooling/ma005,01-01-0001,,0
+schooling/ma005,29-01-2026,use LaTex to write lecture notes,0

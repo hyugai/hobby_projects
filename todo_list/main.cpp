@@ -89,7 +89,7 @@ int main() {
 }
 void inputMenu(int &n) {
     string menu{"0.Display 1.Add 2.Update 3.Remove 4.Details 5.Done 6.exit: "};
-    cout << "󰍜 Menu:" << endl;
+    cout << "󰮫 Menu:" << endl;
     cout << menu;
     cin >> n;
     // system("clear"); // clear screen
@@ -252,8 +252,8 @@ void ToDoList::showDetails(const int &n) {
 
     Task &t{tasks.at(n - 1)};
     // Name
-    cout << "󰋇 " << (t.getIsCompleted() ? STRIKEOUT : "") << t.getName()
-         << RESET << endl;
+    cout << "󰋇 " << n << ". " << (t.getIsCompleted() ? STRIKEOUT : "")
+         << t.getName() << RESET << endl;
     // Deadline
     cout << YELLOW " 󰃭 " << t.getDeadline() << RESET << endl;
     // IsCompleted
