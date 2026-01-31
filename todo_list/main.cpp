@@ -18,6 +18,11 @@ using namespace std;
 #define STRIKEOUT "\e[9m"
 #define COLUMNSEPARATOR " | "
 
+//
+struct Date;
+struct Tag;
+// end
+
 enum class UserActions { Display, Add, Update, Remove, Details, Done, exit };
 struct Task;
 struct ToDoList;
@@ -30,6 +35,8 @@ void parseOneCsvLine(vector<string> &, const string &);
 bool isValidDate(const string &);
 bool isCharDigit(const string &, int);
 bool isCharDash(const string &, int);
+
+struct Date {};
 
 struct Task {
     // string variables can be `lvalue`
@@ -67,6 +74,10 @@ struct ToDoList {
     void readTask();
     void updateTask(const int &);
     void deleteTask(const int &);
+
+    //
+    void sortTasks();
+    // end
 
     void displayTasks();
     void showDetails(const int &);
