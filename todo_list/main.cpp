@@ -36,7 +36,10 @@ bool isValidDate(const string &);
 bool isCharDigit(const string &, int);
 bool isCharDash(const string &, int);
 
+//
 struct Date {};
+struct Tag {};
+// end
 
 struct Task {
     // string variables can be `lvalue`
